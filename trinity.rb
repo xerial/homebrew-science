@@ -15,8 +15,15 @@ class Trinity < Formula
     EOS
   end
 
+  # superenv somehow causes several object files to go missing in jellyfish, e.g.
+  # ar: jellyfish/libjellyfish_la-square_binary_matrix.o: No such file or directory
+  env :std
+
   def install
     ENV.j1
+    ENV['CC']='gcc'
+    ENV['CXX']='g++'
+
     system "make"
     # The Makefile is designed to build in place, so we copy all of the needed
     # subdirectories to the prefix.
@@ -27,6 +34,7 @@ class Trinity < Formula
     # symlink in bin to put the wrapper in the user's path.
     mkdir_p bin
     ln_s prefix/'Trinity.pl', bin/'Trinity.pl'
+    ln_s prefix/'Butterfly/Butterfly.jar', bin/'Butterfly.jar'
 
     # Also install a small test case.
     (prefix + 'sample_data').install 'sample_data/test_Trinity_Assembly'
