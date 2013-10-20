@@ -1,28 +1,41 @@
 require 'formula'
 
 class Bedops < Formula
-  homepage 'https://code.google.com/p/bedops/'
-  url 'https://bedops.googlecode.com/files/bedops_macosx_intel_fat-v2.0.0b.tgz'
-  sha1 '4ca3844e626dae4b16a710078a3a37994fab0e69'
+  homepage 'https://github.com/bedops/bedops'
+  url 'https://github.com/bedops/bedops/archive/v2.3.0.tar.gz'
+  sha1 'ffb82320a8071af94bbf6e7d2d5834e5c8c14fc7'
+  head 'https://github.com/bedops/bedops.git'
 
-  def install
-    bin.install 'bedops'
-    libexec.install %W(bam2bed bam2starch bbms bbms.py bedextract
-      bedmap closest-features gff2bed gtf2bed sam2bed sam2starch
-      sort-bed starch starchcat starchcluster starchcluster.gnu_parallel
-      unstarch vcf2bed wig2bed)
-  end
-
-  def caveats
-    <<-EOS.undent
-      `bedops` is installed in
-        #{bin}
-      and other executables are installed in
-        #{libexec}
+  fails_with :clang do
+    build 500
+    cause <<-EOS.undent
+      error: assigning to 'struct hashtable_bucket *' from
+      incompatible type 'void *'
     EOS
   end
 
+  fails_with :llvm do
+    build 5658
+    cause <<-EOS.undent
+      adler32.c:65: error: ‘uLong adler32’ redeclared as different kind of symbol
+      zlib.h:1552: error: previous declaration of ‘uLong adler32(uLong, const Bytef*, uInt)’
+    EOS
+  end
+
+  fails_with :gcc do
+    build 5666
+    cause <<-EOS.undent
+      cc1plus: error: unrecognized command line option "-std=c++11"
+    EOS
+  end
+
+  def install
+    system 'make'
+    system 'make', 'install'
+    bin.install Dir['bin/*']
+  end
+
   test do
-    system 'bedops', '--help'
+    system "#{bin}/bedops", '--help'
   end
 end
