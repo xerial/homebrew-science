@@ -27,12 +27,10 @@ class R < Formula
   end
 
   def install
-    args = [
-      "--prefix=#{prefix}",
-      "--with-aqua",
-      "--enable-R-framework",
-      "--with-lapack"
-    ]
+    args = [ "--prefix=#{prefix}" ]
+    args.concat(["--with-aqua",
+        "--enable-R-framework",
+        "--with-lapack"]) if OS.mac?
 
     if build.with? 'valgrind'
       args << '--with-valgrind-instrumentation=2'
@@ -55,10 +53,12 @@ class R < Formula
     bin.mkpath
     man1.mkpath
 
-    ln_s prefix+"R.framework/Resources/bin/R", bin
-    ln_s prefix+"R.framework/Resources/bin/Rscript", bin
-    ln_s prefix+"R.framework/Resources/man1/R.1", man1
-    ln_s prefix+"R.framework/Resources/man1/Rscript.1", man1
+    if OS.mac?
+      ln_s prefix+"R.framework/Resources/bin/R", bin
+      ln_s prefix+"R.framework/Resources/bin/Rscript", bin
+      ln_s prefix+"R.framework/Resources/man1/R.1", man1
+      ln_s prefix+"R.framework/Resources/man1/Rscript.1", man1
+    end
 
     bash_completion.install resource('completion')
 
@@ -76,5 +76,5 @@ class R < Formula
     To enable rJava support, run the following command:
       R CMD javareconf JAVA_CPPFLAGS=-I/System/Library/Frameworks/JavaVM.framework/Headers
     EOS
-  end
+  end if OS.mac?
 end
